@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33627.172
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReelWords", "Source\ReelWords\ReelWords.csproj", "{165097AE-EC70-4DA9-AD37-F27C71492EB0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReelWordsTests", "Test\ReelWordsTests\ReelWordsTests.csproj", "{56B14898-28F2-432E-BA5E-3F957D962D55}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{387AF1D3-3A31-48F5-A27C-CE07938FBB1B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{73C63F98-E8F7-429A-8A72-9858854CDFF9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{165097AE-EC70-4DA9-AD37-F27C71492EB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{165097AE-EC70-4DA9-AD37-F27C71492EB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{165097AE-EC70-4DA9-AD37-F27C71492EB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{165097AE-EC70-4DA9-AD37-F27C71492EB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56B14898-28F2-432E-BA5E-3F957D962D55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56B14898-28F2-432E-BA5E-3F957D962D55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56B14898-28F2-432E-BA5E-3F957D962D55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56B14898-28F2-432E-BA5E-3F957D962D55}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{165097AE-EC70-4DA9-AD37-F27C71492EB0} = {387AF1D3-3A31-48F5-A27C-CE07938FBB1B}
+		{56B14898-28F2-432E-BA5E-3F957D962D55} = {73C63F98-E8F7-429A-8A72-9858854CDFF9}
+	EndGlobalSection
+EndGlobal
