@@ -1,1 +1,3 @@
 # scopely-reelwords-backend
+
+## Notes
