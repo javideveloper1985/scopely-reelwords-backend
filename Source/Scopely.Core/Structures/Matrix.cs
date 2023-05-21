@@ -20,21 +20,21 @@ public class Matrix<ItemType>
 
     public int GetLength(int dimension) => data.GetLength(dimension);
 
-    public void Shuffle()
+    public void Shuffle(Random? randomizer = null)
     {
-        int num_rows = GetLength(0);
-        int num_cols = GetLength(1);
-        int num_cells = num_rows * num_cols;
+        int rows = GetLength(0);
+        int cols = GetLength(1);
+        int items = rows * cols;
 
-        Random rand = new();
-        for (int i = 0; i < num_cells - 1; i++)
+        Random rand = randomizer ?? new();
+        for (int i = 0; i < items - 1; i++)
         {
-            int j = rand.Next(i, num_cells);
+            int j = rand.Next(i, items);
 
-            int row_i = i / num_cols;
-            int col_i = i % num_cols;
-            int row_j = j / num_cols;
-            int col_j = j % num_cols;
+            int row_i = i / cols;
+            int col_i = i % cols;
+            int row_j = j / cols;
+            int col_j = j % cols;
 
             (this[row_j, col_j], this[row_i, col_i]) = (this[row_i, col_i], this[row_j, col_j]);
         }

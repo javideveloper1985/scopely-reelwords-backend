@@ -21,7 +21,7 @@ public class Game
         string userId,
         ReelPanel reelPanel)
     {
-        if (string.IsNullOrEmpty(userId))
+        if (string.IsNullOrWhiteSpace(userId))
             throw new ArgumentNullException(nameof(userId));
         if (reelPanel is null || reelPanel.RowCount == 0)
             throw new ArgumentNullException(nameof(reelPanel));

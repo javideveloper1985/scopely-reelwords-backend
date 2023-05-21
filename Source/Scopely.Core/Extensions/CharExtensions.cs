@@ -2,7 +2,7 @@
 
 public static class CharExtensions
 {
-    public static int RemoveLastFoundItem<ItemType>(this ItemType[] array, ItemType itemToRemove)
+    public static int RemoveLastFoundItem<ItemType>(ref ItemType[] array, ItemType itemToRemove)
     {
         var lastIndex = Array.LastIndexOf(array, itemToRemove);
 

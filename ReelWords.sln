@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scopely.Core", "Source\Scop
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReelWords.Infrastructure.Tests", "Test\ReelWords.Infrastructure.Tests\ReelWords.Infrastructure.Tests.csproj", "{961B1AC2-CBB0-450E-8A4C-D752F4381402}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scopely.Core.Tests", "Test\Scopely.Core.Tests\Scopely.Core.Tests.csproj", "{4BE8EAD1-7D40-45E6-B002-E26353C31338}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scopely.Core.Tests", "Test\Scopely.Core.Tests\Scopely.Core.Tests.csproj", "{4BE8EAD1-7D40-45E6-B002-E26353C31338}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

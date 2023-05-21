@@ -41,6 +41,14 @@ public class TrieTests
     }
 
     [Fact]
+    public void Search_WhenWordIsEmpty_ShouldReturnFalse()
+    {
+        var trie = new TrieMock();
+        trie.Insert("hello");
+        Assert.False(trie.Search(string.Empty));
+    }
+
+    [Fact]
     public void Search_WhenWordsExist_ShouldReturnTrue()
     {
         var word = "hello";

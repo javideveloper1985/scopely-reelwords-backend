@@ -13,7 +13,7 @@ public class Trie
 
     public void Insert(string word)
     {
-        if (string.IsNullOrEmpty(word))
+        if (string.IsNullOrWhiteSpace(word))
             return;
 
         var currentNode = _rootNode;
@@ -33,8 +33,7 @@ public class Trie
 
     public bool Search(string? word)
     {
-        //TODO: Unit test this branch
-        if (string.IsNullOrEmpty(word))
+        if (string.IsNullOrWhiteSpace(word))
             return false;
 
         var currentNode = _rootNode;
@@ -49,7 +48,7 @@ public class Trie
 
     public bool Delete(string word)
     {
-        if (string.IsNullOrEmpty(word))
+        if (string.IsNullOrWhiteSpace(word))
             return false;
 
         var currentNode = _rootNode;

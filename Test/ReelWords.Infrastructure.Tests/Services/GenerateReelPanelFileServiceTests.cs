@@ -3,11 +3,11 @@ using ReelWords.Infrastructure.Tests.TestFixture;
 
 namespace ReelWords.Infrastructure.Tests.Services
 {
-    public class GenerateReelPanelFileServiceTests : IClassFixture<InfrastructureFixture>
+    public class GenerateReelPanelFileServiceTests : IClassFixture<ReelWordsFixture>
     {
-        private readonly InfrastructureFixture _fixture;
+        private readonly ReelWordsFixture _fixture;
 
-        public GenerateReelPanelFileServiceTests(InfrastructureFixture fixture)
+        public GenerateReelPanelFileServiceTests(ReelWordsFixture fixture)
         {
             _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }

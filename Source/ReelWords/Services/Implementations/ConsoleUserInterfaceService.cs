@@ -28,7 +28,7 @@ public class ConsoleUserInterfaceService : IConsoleUserInterfaceService
 
     public string GetInput(string message)
     {
-        if (!string.IsNullOrEmpty(message))
+        if (!string.IsNullOrWhiteSpace(message))
             ShowMessage(message);
 
         Console.Write(" -------> ");

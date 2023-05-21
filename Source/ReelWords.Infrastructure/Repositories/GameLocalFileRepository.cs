@@ -11,19 +11,19 @@ public class GameLocalFileRepository : IGameRepository
 {
     public const string FileKey = "SavedGamesPath";
 
-    private readonly string _mainPath;
+    private readonly string _rootFolder;
     private readonly string _path;
 
     public GameLocalFileRepository(IConfiguration configuration)
     {
         _path = configuration[FileKey] ??
             throw new ArgumentException($"'{FileKey}' cannot be null or whitespace.", nameof(configuration));
-        _mainPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        _rootFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
     }
 
     public async Task<Game?> GetGameByUserId(string userId)
     {
-        var path = $"{_mainPath}/{_path}/{userId}.txt";
+        var path = $"{_rootFolder}/{_path}/{userId}.txt";
         if (!File.Exists(path))
             return null;
 
@@ -35,16 +35,26 @@ public class GameLocalFileRepository : IGameRepository
 
     public async Task<string> Create(Game game)
     {
-        var folder = Path.Combine(_mainPath, _path);
-        Directory.CreateDirectory(folder);
-        var path = $"{folder}/{game.UserId}.txt";
+        var mainPath = Path.Combine(_rootFolder, _path);
+        var fileName = $"{game.UserId}.txt";
         var dto = GameMapper.ToDto(game);
-        var jsonGame = JsonConvert.SerializeObject(dto);
+        var content = JsonConvert.SerializeObject(dto);
 
-        File.WriteAllText(path, jsonGame);
+        WriteFile(mainPath, fileName, content);
+
         return await Task.FromResult(game.Id);
     }
 
     public async Task<string> Update(Game game)
         => await Create(game);
+
+    protected virtual bool WriteFile(string mainPath, string fileName, string content)
+    {
+        var path = Path.Combine(mainPath, fileName);
+        Directory.CreateDirectory(mainPath);
+
+        File.WriteAllText(path, content);
+
+        return true;
+    }
 }

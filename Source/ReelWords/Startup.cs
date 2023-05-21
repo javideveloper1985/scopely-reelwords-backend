@@ -37,8 +37,6 @@ namespace ReelWords
                 .AddSingleton<IGetDictionaryService, GetDictionaryFileService>()
                 .AddSingleton<ISaveGameService, SaveGameService>()
                 
-                .AddSingleton<IGetCurrentUserUseCase, GetCurrentUserUseCase>()
-                .AddSingleton<IGetUserWordUseCase, GetUserWordUseCase>()
                 .AddSingleton<ILoadGameUseCase, LoadGameUseCase>()
                 .AddSingleton<ICreateGameUseCase, CreateGameUseCase>()
                 .AddSingleton<ISaveGameUseCase, SaveGameUseCase>()

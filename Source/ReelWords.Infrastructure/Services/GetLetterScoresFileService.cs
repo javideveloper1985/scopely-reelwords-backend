@@ -16,9 +16,9 @@ public class GetLetterScoresFileService : IGetLetterScoresService
             throw new ArgumentException($"'{FileKey}' cannot be null or whitespace.", nameof(configuration));
     }
 
-    public async Task<Dictionary<char, Letter>> GetAll()
+    public async Task<Dictionary<char, int>> Get()
     {
-        var result = new Dictionary<char, Letter>();
+        var result = new Dictionary<char, int>();
 
         var lines = File.ReadAllLines(_path);
         foreach (var line in lines)
@@ -26,7 +26,7 @@ public class GetLetterScoresFileService : IGetLetterScoresService
             var score = line.Split(' ');
             var letter = score[0][0];
             var value = int.Parse(score[1]);
-            result.Add(letter, new Letter(letter, value));
+            result.Add(letter, value);
         }
 
         return await Task.FromResult(result);

@@ -1,4 +1,5 @@
-﻿using ReelWords.Constants;
+﻿using Microsoft.Extensions.Configuration;
+using ReelWords.Constants;
 using ReelWords.Domain.Entities;
 using ReelWords.Domain.Factories;
 using ReelWords.Domain.Services;
@@ -6,7 +7,6 @@ using ReelWords.Domain.ValueObjects;
 using ReelWords.Services;
 using ReelWords.UseCases;
 using Scopely.Core.Enums;
-using Scopely.Core.Result;
 using Scopely.Core.Structures;
 using System;
 using System.Collections.Generic;
@@ -27,15 +27,15 @@ public class ReelWordsGameManager : IReelWordsGameManager
     private readonly IConsoleUserInterfaceService _uiService;
 
     private Game _game;
-    private Dictionary<char, Letter> _charScores;
+    private Dictionary<char, int> _charScores;
     private Trie _validWordsTrie;
     private string _validChars;
 
     private bool _stopGame = false;
 
     //TODO: Better obtain these values from settings
-    private const int _defaultWordSize = 7;
-    private const int _penaltyPoints = 2;
+    private readonly int _defaultWordSize;
+    private readonly int _shufflePenaltyPoints;
 
     //TODO: Inject ILogger to create system logs
     public ReelWordsGameManager(
@@ -44,21 +44,25 @@ public class ReelWordsGameManager : IReelWordsGameManager
         ISaveGameUseCase saveGame,
         IGetLetterScoresService scoreService,
         IGetDictionaryService getDictionaryService,
-        IConsoleUserInterfaceService userInterface)
+        IConsoleUserInterfaceService userInterface,
+        IConfiguration config)
     {
         _loadGame = loadGame ?? throw new ArgumentNullException(nameof(loadGame));
         _createGame = createGame ?? throw new ArgumentNullException(nameof(createGame));
         _saveGame = saveGame ?? throw new ArgumentNullException(nameof(saveGame));
-
         _calculateScoreService = scoreService ?? throw new ArgumentNullException(nameof(scoreService));
         _getValidWordsService = getDictionaryService ?? throw new ArgumentNullException(nameof(getDictionaryService));
-
         _uiService = userInterface ?? throw new ArgumentNullException(nameof(userInterface));
+        if (config is null)
+            throw new ArgumentNullException(nameof(config));
+
+        _defaultWordSize = int.TryParse(config[ConfigKeys.WordSize], out int valueSize) ? valueSize : 7;
+        _shufflePenaltyPoints = int.TryParse(config[ConfigKeys.ShufflePenalty], out int valuePenalty) ? valuePenalty : 2;
     }
 
     private async Task LoadGameData()
     {
-        _charScores = await _calculateScoreService.GetAll();
+        _charScores = await _calculateScoreService.Get();
         var validWords = await _getValidWordsService.GetByWordSize(_defaultWordSize);
         _validWordsTrie = Trie.CreateFromListOfWords(validWords);
         _validChars = ValidCharsFactory.Get(Language.English);
@@ -72,8 +76,8 @@ public class ReelWordsGameManager : IReelWordsGameManager
 
             await LoadGameData();
 
-            var userId = GetUserInput($"Please, enter an user id...");
-            await CheckExitKeyWord(userId);
+            var userId = GetUserInput(Messages.EnterUser);
+            await CheckExitKeyWord(userId, true);
             if (_stopGame)
                 return;
 
@@ -85,43 +89,56 @@ public class ReelWordsGameManager : IReelWordsGameManager
             if (_stopGame)
                 return;
 
+            _uiService.NewLine();
+            _uiService.ShowSuccess($" *** HI {userId} ***");
+            _uiService.ShowSuccess($" - Current score: {_game.Score} ***");
+            _uiService.NewLine();
+
             do
             {
-                PrintReel();
-
-                var wordPoints = -1;
-                string word;
-                do
-                {
-                    word = GetUserInput($"Enter a word using the max number of letters above...");
-                    await CheckExitKeyWord(word);
-                    if (_stopGame)
-                        return;
-
-                    if (!CheckShuffleKeyWord(word))
-                    {
-                        var isValidWord = ValidateWordScore(word);
-                        if (isValidWord)
-                            ApplyWordScore(word);
-                    }
-
-                } while (wordPoints == -1);
-
+                await StartRound();
             }
             while (!_stopGame);
+
         }
         catch (Exception ex)
         {
             //TODO: Log the exception when the ILogger has been injected
-            Quit("We're sorry. An unexpected error has occurred. Restart the application and try again.");
+            Quit(Messages.UnexpectedError);
         }
     }
 
-    private async Task CheckExitKeyWord(string word)
+    private async Task StartRound()
     {
-        if (word.Equals(KeyWords.Exit, StringComparison.InvariantCultureIgnoreCase))
+        var wordPoints = -1;
+        string word;
+
+        do
         {
-            if (AskSaveGame())
+            _uiService.NewLine();
+
+            PrintReel();
+
+            word = GetUserInput(Messages.EnterWord);
+            await CheckExitKeyWord(word, false);
+            if (_stopGame)
+                return;
+
+            if (!CheckShuffleKeyWord(word))
+            {
+                var isValidWord = ValidateWordScore(word);
+                if (isValidWord)
+                    wordPoints = ApplyWordScore(word);
+            }
+
+        } while (wordPoints == -1);
+    }
+
+    private async Task CheckExitKeyWord(string word, bool forceExit)
+    {
+        if (word.Equals(UserKeyWords.Exit, StringComparison.InvariantCultureIgnoreCase))
+        {
+            if (!forceExit && AskSaveGame())
                 await Save();
 
             Quit();
@@ -130,28 +147,33 @@ public class ReelWordsGameManager : IReelWordsGameManager
 
     private bool CheckShuffleKeyWord(string word)
     {
-        if (word.Equals(KeyWords.Shuffle, StringComparison.InvariantCultureIgnoreCase))
+        if (word.Equals(UserKeyWords.Shuffle, StringComparison.InvariantCultureIgnoreCase))
         {
-            _uiService.ShowError($"You have lost {_penaltyPoints} points.");
-            _game.AddScore(_penaltyPoints);
             _game.ReelPanel.Shuffle();
+            _game.AddScore(_shufflePenaltyPoints * -1);
+            _uiService.ShowError($"You have lost {_shufflePenaltyPoints} points. Total points: {_game.Score}");
             return true;
         }
 
         return false;
     }
-    
+
     private async Task<Game> GetSavedGame(string userId)
     {
         var gameResponse = await _loadGame.Execute(userId);
         if (!gameResponse.IsOk)
             Quit("Error loading saved game.");
 
-        _uiService.ShowMessage("HEY!", ConsoleColor.Yellow);
-        var input = _uiService.AskForInputOption($"There is a saved game for the user {userId}. " +
-            $"Would you like to continue that game?", "y", "n");
+        if (gameResponse.Value is not null)
+        {
+            _uiService.ShowMessage("HEY!", ConsoleColor.Yellow);
+            var input = _uiService.AskForInputOption($"There is a saved game for the user {userId}. " +
+                $"Would you like to continue that game?", "y", "n");
 
-        return input == "y" ? gameResponse.Value : null;
+            return input == "y" ? gameResponse.Value : null;
+        }
+
+        return null;
     }
 
     private async Task<Game> CreateNewGame(string userId)
@@ -159,10 +181,6 @@ public class ReelWordsGameManager : IReelWordsGameManager
         var gameResponse = await _createGame.Execute(_defaultWordSize, userId);
         if (!gameResponse.IsOk)
             Quit("Error creating new game.");
-
-        _uiService.NewLine();
-        _uiService.ShowTitle(" *** NEW GAME ***");
-        _uiService.NewLine();
 
         return gameResponse.Value;
     }
@@ -174,7 +192,7 @@ public class ReelWordsGameManager : IReelWordsGameManager
         reelText.Append(" | ");
         foreach (var letter in currentReel)
         {
-            var score = _charScores.ContainsKey(letter) ? _charScores[letter].Score : 0;
+            var score = _charScores.ContainsKey(letter) ? _charScores[letter] : 0;
             reelText.Append($"{char.ToUpper(letter)} ({score})");
             reelText.Append(" | ");
         }
@@ -183,14 +201,14 @@ public class ReelWordsGameManager : IReelWordsGameManager
         _uiService.NewLine();
     }
 
-    private string GetUserInput(string message)
+    private string GetUserInput(string message = "")
     {
         string word;
         do
         {
             word = _uiService.GetInput(message);
         }
-        while (string.IsNullOrEmpty(word));
+        while (string.IsNullOrWhiteSpace(word));
 
         _uiService.NewLine();
 
@@ -199,48 +217,50 @@ public class ReelWordsGameManager : IReelWordsGameManager
 
     private bool ValidateWordScore(string word)
     {
-        if (string.IsNullOrEmpty(word))
+        if (string.IsNullOrWhiteSpace(word))
             return false;
-
-        if (!_game.ReelPanel.CheckWord(word))
-        {
-            _uiService.ShowError($"You must use the letters of the reel.");
-            return false;
-        }
 
         foreach (var letter in word)
         {
             if (!_validChars.Contains(letter))
             {
-                _uiService.ShowError($"You must use letters of English language.");
+                _uiService.ShowError(Messages.WrongWordLanguage);
                 return false;
             }
         }
 
+        if (!_game.ReelPanel.CheckWord(word))
+        {
+            _uiService.ShowError(Messages.WrongWordReel);
+            return false;
+        }
+
         if (!_validWordsTrie.Search(word))
         {
-            _uiService.ShowError($"{word} does not exist in the game dictionary.");
+            _uiService.ShowError(Messages.WrongWordDictionary);
             return false;
         }
 
         return true;
     }
 
-    private void ApplyWordScore(string word)
+    private int ApplyWordScore(string word)
     {
         int points = 0;
 
         foreach (var letter in word.Where(l => _charScores.ContainsKey(l)))
-            points += _charScores[letter].Score;
+            points += _charScores[letter];
 
         if (points != -1)
         {
             _game.AddScore(points);
             _game.ReelPanel.ScrollLetters(word);
 
-            _uiService.ShowSuccess($"Great!! You have obtained {points} points!! ({_game.Score} in total)");
+            _uiService.ShowSuccess($"Great!! You have obtained {points} points!! Total points: {_game.Score}.");
             _uiService.NewLine();
         }
+
+        return points;
     }
 
     private bool AskSaveGame()
@@ -248,7 +268,7 @@ public class ReelWordsGameManager : IReelWordsGameManager
         _uiService.NewLine();
 
         var options = new string[] { "y", "n" };
-        var input = _uiService.AskForInputOption("Would you like to save the game?", options);
+        var input = _uiService.AskForInputOption(Messages.AskSave, options);
         return input == "y";
     }
 
@@ -265,7 +285,7 @@ public class ReelWordsGameManager : IReelWordsGameManager
 
     private void Quit(string errorMessage = "")
     {
-        if (!string.IsNullOrEmpty(errorMessage))
+        if (!string.IsNullOrWhiteSpace(errorMessage))
             _uiService.ShowError(errorMessage);
 
         _stopGame = true;
@@ -275,20 +295,26 @@ public class ReelWordsGameManager : IReelWordsGameManager
 
     private void Welcome()
     {
-        _uiService.ShowTitle("**********************************************");
-        _uiService.ShowTitle("************ WELCOME TO REELWORDS ************");
-        _uiService.ShowTitle("**********************************************");
+        _uiService.ShowMessage("**********************************************", ConsoleColor.Cyan);
+        _uiService.ShowMessage("************ WELCOME TO REELWORDS ************", ConsoleColor.Cyan);
+        _uiService.ShowMessage("**********************************************", ConsoleColor.Cyan);
         _uiService.NewLine();
-        _uiService.ShowSuccess("Game instructions: You must create words with the letters that appear on the screen. " +
+        _uiService.ShowSuccess("Game instructions:");
+        _uiService.ShowMessage(" - You must create words with the letters that appear on the screen. " +
             "The word must exist in the game dictionary. If it exists, you will receive certain points " +
             "regarding to the corresponding letter points.");
+        _uiService.NewLine();
+        _uiService.ShowSuccess("Special commands:");
+        _uiService.ShowMessage($" - '{UserKeyWords.Exit}' -> End game.");
+        _uiService.ShowMessage($" - '{UserKeyWords.Shuffle}' -> If you are not be able to find words, you can shuffle the letters with a {_shufflePenaltyPoints} points penalty.");
         _uiService.NewLine();
     }
 
     private void GoodBye()
     {
-        _uiService.ShowTitle("********************************************");
-        _uiService.ShowTitle("************ THANKS FOR PLAYING ************");
-        _uiService.ShowTitle("********************************************");
+        _uiService.NewLine();
+        _uiService.ShowMessage("********************************************", ConsoleColor.Cyan);
+        _uiService.ShowMessage("************ THANKS FOR PLAYING ************", ConsoleColor.Cyan);
+        _uiService.ShowMessage("********************************************", ConsoleColor.Cyan);
     }
 }

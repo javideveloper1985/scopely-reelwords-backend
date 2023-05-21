@@ -36,7 +36,7 @@ public class ReelPanel
     /// <returns></returns>
     public bool CheckWord(string word)
     {
-        if (string.IsNullOrEmpty(word))
+        if (string.IsNullOrWhiteSpace(word))
             return false;
 
         var reelLetters = new char[ColumnCount];
@@ -45,7 +45,7 @@ public class ReelPanel
 
         foreach (var letter in word)
         {
-            if (reelLetters.RemoveLastFoundItem(letter) == -1)
+            if (CharExtensions.RemoveLastFoundItem(ref reelLetters, letter) == -1)
                 return false;
         }
 
