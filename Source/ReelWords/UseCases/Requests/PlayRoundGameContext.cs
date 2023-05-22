@@ -4,23 +4,23 @@ using System;
 
 namespace ReelWords.UseCases.Requests;
 
-public class PlayRoundUseCaseRequest
+public class PlayRoundGameContext
 {
     public Game Game { get; set; }
 
-    public Trie Trie { get; set; }
+    public Trie ValidationTrie { get; set; }
 
     public int PenaltyPoints { get; set; }
 
-    public static PlayRoundUseCaseRequest Create(
+    public static PlayRoundGameContext Create(
         Game game,
         Trie validationTrie,
         int penaltyPoints)
     {
-        return new PlayRoundUseCaseRequest()
+        return new PlayRoundGameContext()
         {
             Game = game ?? throw new ArgumentNullException(nameof(game)),
-            Trie = validationTrie ?? throw new ArgumentNullException(nameof(validationTrie)),
+            ValidationTrie = validationTrie ?? throw new ArgumentNullException(nameof(validationTrie)),
             PenaltyPoints = penaltyPoints
         };
     }

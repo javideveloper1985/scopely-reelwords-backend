@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Moq;
+using ReelWords.Commands;
 using ReelWords.Constants;
 using ReelWords.Domain.Entities;
 using ReelWords.Domain.Services;
@@ -67,6 +68,16 @@ namespace ReelWordsTests.TestFixture
             mock
                 .Setup(serv => serv.Get())
                 .ReturnsAsync(scores ?? DefaultScores);
+            return mock;
+        }
+
+        public Mock<IGetUserUseCase> CreateGetUserMock(string userId = null)
+        {
+            var user = userId ?? DefaultUserId.ToLower();
+            var mock = new Mock<IGetUserUseCase>();
+            mock
+                .Setup(uc => uc.Execute())
+                .Returns(new UserNameCommand(user));
             return mock;
         }
 

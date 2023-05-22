@@ -27,27 +27,20 @@ public class PlayRoundUseCase : IPlayRoundUseCase
         _gameUiService = gameUiService ?? throw new ArgumentNullException(nameof(gameUiService));
     }
 
-    public async Task<IUserGameCommand> PlayRound(PlayRoundUseCaseRequest request)
+    public async Task<IUserGameCommand> Execute(PlayRoundGameContext context)
     {
         try
         {
             var word = _gameUiService.InputWord();
-            if (string.IsNullOrWhiteSpace(word))
+            if (string.IsNullOrEmpty(word))
                 return new InvalidWordCommand(Messages.EmptyWordLanguage);
-
-            var exit = word.Equals(UserKeyWords.Exit, StringComparison.InvariantCultureIgnoreCase);
-            if (exit)
-                return new ExitGameCommand(_gameUiService.CheckIfUserWantsSaveGame());
 
             var specialCommand = CheckSpecialInput(word);
             if (specialCommand is not null)
                 return specialCommand;
 
-            var validationCommand = ValidateWordScore(request.Game, request.Trie, word);
-            if (validationCommand is not null)
-                return validationCommand;
-
-            return await CalculateScore(word);
+            var validationCommand = ValidateWordScore(context.Game, context.ValidationTrie, word);
+            return validationCommand ?? await CalculateScore(word);
         }
         catch (Exception ex)
         {
@@ -55,13 +48,19 @@ public class PlayRoundUseCase : IPlayRoundUseCase
         }
     }
 
-    private static IUserGameCommand CheckSpecialInput(string word)
+    private IUserGameCommand CheckSpecialInput(string word)
     {
+        if (word.Equals(UserKeyWords.Exit, StringComparison.InvariantCultureIgnoreCase))
+            return new ExitGameCommand(_gameUiService.CheckIfUserWantsSaveGame());
+
         if (word.Equals(UserKeyWords.Shuffle, StringComparison.InvariantCultureIgnoreCase))
             return new ShuffleCommand();
 
         if (word.Equals(UserKeyWords.ShowWords, StringComparison.InvariantCultureIgnoreCase))
             return new ShowWordsCommand();
+
+        if (word.Equals(UserKeyWords.Help, StringComparison.InvariantCultureIgnoreCase))
+            return new HelpCommand();
 
         return null;
     }

@@ -17,6 +17,7 @@ namespace ReelWords.Main;
 
 public class ReelWordsGameManager : IReelWordsGameManager
 {
+    private readonly IGetUserUseCase _getUser;
     private readonly ILoadGameUseCase _loadGame;
     private readonly ICreateGameUseCase _createGame;
     private readonly IPlayRoundUseCase _playRoundUseCase;
@@ -27,16 +28,17 @@ public class ReelWordsGameManager : IReelWordsGameManager
     private readonly ILogger<ReelWordsGameManager> _logger;
 
     private Game _game;
+    private User _user;
     private Dictionary<char, int> _letterScores;
     private Trie _validTrie;
-
-    private bool _stopGame = false;
+    private bool _exit;
 
     private readonly int _defaultWordSize;
     private readonly int _penaltyPoints;
 
     //TODO: In order to create system logs, inject ILogger
     public ReelWordsGameManager(
+        IGetUserUseCase getUser,
         ILoadGameUseCase loadGame,
         ICreateGameUseCase createGame,
         IPlayRoundUseCase playRoundUseCase,
@@ -47,6 +49,7 @@ public class ReelWordsGameManager : IReelWordsGameManager
         IConfiguration config,
         ILogger<ReelWordsGameManager> logger)
     {
+        _getUser = getUser ?? throw new ArgumentNullException(nameof(getUser));
         _loadGame = loadGame ?? throw new ArgumentNullException(nameof(loadGame));
         _createGame = createGame ?? throw new ArgumentNullException(nameof(createGame));
         _playRoundUseCase = playRoundUseCase ?? throw new ArgumentNullException(nameof(playRoundUseCase));
@@ -76,76 +79,93 @@ public class ReelWordsGameManager : IReelWordsGameManager
             _gameUiService.ShowWelcome(_penaltyPoints);
 
             await LoadGameData();
+            await GetUserName();
+            if (_exit)
+                return;
 
-            var userName = _gameUiService.InputUserName();
+            _game = await GetSavedGame(_user.Id);
+            _game ??= await CreateNewGame(_user.Id);
 
-            var exit = CheckExitKeyWord(userName);
-            if (!exit)
-            {
-                _game = await GetSavedGame(userName);
-                _game ??= await CreateNewGame(userName);
-                if (_stopGame)
-                    return;
-
-                var request = PlayRoundUseCaseRequest.Create(_game, _validTrie, _penaltyPoints);
-
-                while (!_stopGame)
-                {
-                    _gameUiService.ShowLevelAndScore(request.Game.PlayedWords.Count, request.Game.Score);
-                    _gameUiService.ShowReelLetters(request.Game.ReelPanel, _letterScores);
-
-                    var command = await _playRoundUseCase.PlayRound(request);
-
-                    _stopGame = await CommandHandler(command);
-                }
-            }
+            await PlayRound();
         }
         catch (Exception ex)
         {
-            _stopGame = true;
             await _gameUiService.ShowUnexpectedError($"{Messages.UnexpectedError}: {ex.Message}");
         }
 
         _gameUiService.ShowGoodbye();
     }
 
-    private async Task<bool> CommandHandler(IUserGameCommand command)
+    private async Task PlayRound()
     {
-        if (command is ExitGameCommand exitCommand)
+        var exitLoop = false;
+        while (!exitLoop)
         {
-            if (exitCommand.SaveGame)
-                await Save();
+            _gameUiService.ShowLevelAndScore(_game.PlayedWords.Count, _game.Score);
+            _gameUiService.ShowReelLetters(_game.ReelPanel, _letterScores);
 
-            return true;
-        }
-        else if (command is ShuffleCommand)
-        {
-            _game.ReelPanel.Shuffle();
-            _game.SubtractScore(_penaltyPoints);
-            _gameUiService.ShowPenalty(_penaltyPoints, _game.Score);
-        }
-        else if (command is ShowWordsCommand)
-        {
-            _gameUiService.ShowWords(_game.PlayedWords);
-        }
-        else if (command is InvalidWordCommand invalidWordCommand)
-        {
-            _gameUiService.ShowWrongInput(invalidWordCommand.Message);
-        }
-        else if (command is WordSubmittedCommand wordSubmittedCommand)
-        {
-            _game.AddScore(wordSubmittedCommand.Score, wordSubmittedCommand.Value);
-            _game.ReelPanel.ScrollLetters(wordSubmittedCommand.Value);
-            _gameUiService.ShowWordSubmitted(wordSubmittedCommand.Value, wordSubmittedCommand.Score, _game.Score);
-        }
-        else
-            throw new InvalidOperationException("Unknonw command.");
+            var context = PlayRoundGameContext.Create(_game, _validTrie, _penaltyPoints);
+            var command = await _playRoundUseCase.Execute(context);
 
-        return false;
+            exitLoop = await CommandHandler(command);
+        }
     }
 
-    private bool CheckExitKeyWord(string word)
-        => word.Equals(UserKeyWords.Exit, StringComparison.InvariantCultureIgnoreCase);
+    private async Task<bool> GetUserName()
+    {
+        var exitLoop = false;
+        while (!exitLoop && _user is null)
+        {
+            var commandGetUser = _getUser.Execute();
+            exitLoop = await CommandHandler(commandGetUser);
+        }
+        return exitLoop;
+    }
+
+    private async Task<bool> CommandHandler(IUserGameCommand command)
+    {
+        var stopProcess = false;
+
+        switch (command)
+        {
+            case ExitGameCommand exitCommand:
+                if (exitCommand.SaveGame)
+                    await Save();
+                _gameUiService.ShowGoodbye();
+                stopProcess = true;
+                _exit = true;
+                break;
+            case WrongNameCommand wrongNameCommand:
+                _gameUiService.ShowWrongInput(wrongNameCommand.Message);
+                break;
+            case UserNameCommand userCommand:
+                _user = User.Create(userCommand.UserName);
+                break;
+            case ShuffleCommand:
+                _game.ReelPanel.Shuffle();
+                _game.SubtractScore(_penaltyPoints);
+                _gameUiService.ShowPenalty(_penaltyPoints, _game.Score);
+                break;
+            case ShowWordsCommand:
+                _gameUiService.ShowWords(_game.PlayedWords);
+                break;
+            case HelpCommand:
+                _gameUiService.ShowHelp(_penaltyPoints);
+                break;
+            case InvalidWordCommand invalidWordCommand:
+                _gameUiService.ShowWrongInput(invalidWordCommand.Message);
+                break;
+            case WordSubmittedCommand wordSubmittedCommand:
+                _game.AddScore(wordSubmittedCommand.Score, wordSubmittedCommand.Value);
+                _game.ReelPanel.ScrollLetters(wordSubmittedCommand.Value);
+                _gameUiService.ShowWordSubmitted(wordSubmittedCommand.Value, wordSubmittedCommand.Score, _game.Score);
+                break;
+            default:
+                throw new InvalidOperationException("Unknonw command.");
+        }
+
+        return stopProcess;
+    }
 
     private async Task<Game?> GetSavedGame(string userName)
     {

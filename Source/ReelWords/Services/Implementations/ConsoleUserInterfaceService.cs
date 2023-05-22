@@ -15,13 +15,6 @@ public class ConsoleUserInterfaceService : IConsoleUserInterfaceService
         Console.ResetColor();
     }
 
-    public void ShowTitle(string message)
-    {
-        Console.BackgroundColor = ConsoleColor.White;
-        ShowMessage(message, ConsoleColor.Red);
-        Console.ResetColor();
-    }
-
     public void ShowError(string message) => ShowMessage(message, ConsoleColor.Red);
 
     public void ShowSuccess(string message) => ShowMessage(message, ConsoleColor.Green);

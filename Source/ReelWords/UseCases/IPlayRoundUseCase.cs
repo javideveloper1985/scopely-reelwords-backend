@@ -6,5 +6,5 @@ namespace ReelWords.UseCases;
 
 public interface IPlayRoundUseCase
 {
-    Task<IUserGameCommand> PlayRound(PlayRoundUseCaseRequest request);
+    Task<IUserGameCommand> Execute(PlayRoundGameContext context);
 }

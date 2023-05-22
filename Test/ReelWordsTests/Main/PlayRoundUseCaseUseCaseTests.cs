@@ -25,7 +25,7 @@ namespace ReelWordsTests.Main
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task PlayRound_WhenUserWantsToSaveAndExit_ShouldReturnExitGameCommand(bool saveGame)
+        public async Task Execute_WhenUserWantsToSaveAndExit_ShouldReturnExitGameCommand(bool saveGame)
         {
             var getLetterScoresService = new Mock<IGetLetterScoresService>();
             var gameUiService = new Mock<IReelWordsUserInterfaceService>();
@@ -40,7 +40,7 @@ namespace ReelWordsTests.Main
                 getLetterScoresService.Object,
                 gameUiService.Object);
 
-            var command = await useCase.PlayRound(It.IsAny<PlayRoundUseCaseRequest>());
+            var command = await useCase.Execute(It.IsAny<PlayRoundGameContext>());
 
             Assert.IsType<ExitGameCommand>(command);
             Assert.Equal(saveGame, (command as ExitGameCommand).SaveGame);
@@ -49,7 +49,7 @@ namespace ReelWordsTests.Main
         [Theory]
         [InlineData(UserKeyWords.Shuffle, typeof(ShuffleCommand))]
         [InlineData(UserKeyWords.ShowWords, typeof(ShowWordsCommand))]
-        public async Task PlayRound_WhenPlaySpecialKeys_ShouldReturnSpecialCommands(
+        public async Task Execute_WhenPlaySpecialKeys_ShouldReturnSpecialCommands(
            string specialKey,
            Type expectedType)
         {
@@ -63,13 +63,13 @@ namespace ReelWordsTests.Main
                 getLetterScoresService.Object,
                 gameUiService.Object);
 
-            var command = await useCase.PlayRound(It.IsAny<PlayRoundUseCaseRequest>());
+            var command = await useCase.Execute(It.IsAny<PlayRoundGameContext>());
 
             Assert.IsType(expectedType, command);
         }
 
         [Fact]
-        public async Task PlayRound_WhenPlayEmptyWord_ShouldReturnInvalidWordCommand()
+        public async Task Execute_WhenPlayEmptyWord_ShouldReturnInvalidWordCommand()
         {
             var getLetterScoresService = new Mock<IGetLetterScoresService>();
             var gameUiService = new Mock<IReelWordsUserInterfaceService>();
@@ -81,7 +81,7 @@ namespace ReelWordsTests.Main
                 getLetterScoresService.Object,
                 gameUiService.Object);
 
-            var command = await useCase.PlayRound(It.IsAny<PlayRoundUseCaseRequest>());
+            var command = await useCase.Execute(It.IsAny<PlayRoundGameContext>());
 
             Assert.IsType<InvalidWordCommand>(command);
             Assert.Equal(Messages.EmptyWordLanguage, (command as InvalidWordCommand).Message);
@@ -91,7 +91,7 @@ namespace ReelWordsTests.Main
         [InlineData("123", Messages.WrongWordLanguage)]
         [InlineData("ca", Messages.WrongWordDictionary)]
         [InlineData("xxx", Messages.WrongWordReel)]
-        public async Task PlayRound_WhenPlayWrongWord_ShouldReturnInvalidWordCommand(
+        public async Task Execute_WhenPlayWrongWord_ShouldReturnInvalidWordCommand(
             string word,
             string message)
         {
@@ -106,17 +106,17 @@ namespace ReelWordsTests.Main
                 gameUiService.Object);
 
             var game = _fixture.CreateDefaultGame();
-            var request = PlayRoundUseCaseRequest
+            var request = PlayRoundGameContext
                 .Create(game, _fixture.Trie, ReelWordsFixture.DefaultPenaltyScore);
 
-            var command = await useCase.PlayRound(request);
+            var command = await useCase.Execute(request);
 
             Assert.IsType<InvalidWordCommand>(command);
             Assert.Equal(message, (command as InvalidWordCommand).Message);
         }
 
         [Fact]
-        public async Task PlayRound_WhenPlayCorrectWord_ShouldReturnWordSubmittedCommand()
+        public async Task Execute_WhenPlayCorrectWord_ShouldReturnWordSubmittedCommand()
         {
             var expectedScore = 6;
             
@@ -138,20 +138,20 @@ namespace ReelWordsTests.Main
                 gameUiService.Object);
 
             var game = _fixture.CreateDefaultGame();
-            var request = PlayRoundUseCaseRequest
+            var request = PlayRoundGameContext
                 .Create(game, _fixture.Trie, ReelWordsFixture.DefaultPenaltyScore);
 
-            var command = await useCase.PlayRound(request);
+            var command = await useCase.Execute(request);
 
             Assert.IsType<WordSubmittedCommand>(command);
             Assert.Equal(expectedScore, (command as WordSubmittedCommand).Score);
         }
 
         [Fact]
-        public async Task PlayRound_WhenUnexpectedException_ShouldReturnUnexpectedErrorCommand()
+        public async Task Execute_WhenUnexpectedException_ShouldReturnUnexpectedErrorCommand()
         {
             var expectedExteption = 
-                new InvalidOperationException(nameof(PlayRound_WhenPlayCorrectWord_ShouldReturnWordSubmittedCommand));
+                new InvalidOperationException(nameof(Execute_WhenPlayCorrectWord_ShouldReturnWordSubmittedCommand));
 
             var getLetterScoresService = new Mock<IGetLetterScoresService>();
             var gameUiService = new Mock<IReelWordsUserInterfaceService>();
@@ -161,10 +161,10 @@ namespace ReelWordsTests.Main
                 gameUiService.Object);
 
             var game = _fixture.CreateDefaultGame();
-            var request = PlayRoundUseCaseRequest
+            var request = PlayRoundGameContext
                 .Create(game, _fixture.Trie, ReelWordsFixture.DefaultPenaltyScore);
 
-            var command = await useCase.PlayRound(request);
+            var command = await useCase.Execute(request);
 
             Assert.IsType<UnexpectedErrorCommand>(command);
             Assert.Equal(expectedExteption.Message, (command as UnexpectedErrorCommand).Error.Message);

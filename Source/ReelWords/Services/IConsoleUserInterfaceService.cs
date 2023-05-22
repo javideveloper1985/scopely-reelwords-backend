@@ -4,7 +4,6 @@ namespace ReelWords.Services;
 
 public interface IConsoleUserInterfaceService 
 {
-    void ShowTitle(string message);
     void ShowSuccess(string message);
     void ShowError(string message);
     void ShowMessage(string message, ConsoleColor? color = null);

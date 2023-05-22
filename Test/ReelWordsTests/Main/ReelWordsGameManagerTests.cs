@@ -30,10 +30,10 @@ namespace ReelWordsTests.Main
             var expecteUserId = "martha";
 
             var game = _fixture.CreateDefaultGame(expecteUserId);
-            
+
             var playRoundMock = new Mock<IPlayRoundUseCase>();
             playRoundMock
-                .SetupSequence(serv => serv.PlayRound(It.IsAny<PlayRoundUseCaseRequest>()))
+                .SetupSequence(serv => serv.Execute(It.IsAny<PlayRoundGameContext>()))
                 .ReturnsAsync(new InvalidWordCommand(Messages.WrongWordLanguage))
                 .ReturnsAsync(new InvalidWordCommand(Messages.WrongWordReel))
                 .ReturnsAsync(new InvalidWordCommand(Messages.WrongWordDictionary))
@@ -45,8 +45,9 @@ namespace ReelWordsTests.Main
                 .Returns(expecteUserId);
             var logMock = new Mock<ILogger<ReelWordsGameManager>>();
             var saveMock = _fixture.CreateSaveOkMock(game);
-            
+
             var reelWordsGameManager = new ReelWordsGameManager(
+                _fixture.CreateGetUserMock(expecteUserId).Object,
                 _fixture.CreateLoadNullGameMock(expecteUserId).Object,
                 _fixture.CreateGameUseCaseMock(game, null, expecteUserId).Object,
                 playRoundMock.Object,
@@ -82,11 +83,12 @@ namespace ReelWordsTests.Main
         [Fact]
         public async Task Start_WhenUserDecidesExitsAtTheBegining_ShouldExitApplicationWithoutAskToSave()
         {
-            var gameUiMock = new Mock<IReelWordsUserInterfaceService>();
-            gameUiMock
-                .Setup(serv => serv.InputUserName())
-                .Returns(UserKeyWords.Exit);
+            var getUserMock = new Mock<IGetUserUseCase>();
+            getUserMock
+                .Setup(uc => uc.Execute())
+                .Returns(new ExitGameCommand(false));
 
+            var gameUiMock = new Mock<IReelWordsUserInterfaceService>();
             var loadGameMock = new Mock<ILoadGameUseCase>();
             var createGameMock = new Mock<ICreateGameUseCase>();
             var saveGameMock = new Mock<ISaveGameUseCase>();
@@ -96,6 +98,7 @@ namespace ReelWordsTests.Main
             var logMock = new Mock<ILogger<ReelWordsGameManager>>();
 
             var reelWordsGameManager = new ReelWordsGameManager(
+                getUserMock.Object,
                 loadGameMock.Object,
                 createGameMock.Object,
                 playRoundMock.Object,
