@@ -48,7 +48,4 @@ public class GameLocalFileRepository : IGameRepository
 
         return await Task.FromResult(game.Id);
     }
-
-    public async Task<string> Update(Game game)
-        => await Create(game);
 }

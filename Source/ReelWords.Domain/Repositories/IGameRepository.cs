@@ -6,5 +6,4 @@ public interface IGameRepository
 {
     Task<Game?> GetGameByUserId(string userId);
     Task<string> Create(Game game);
-    Task<string> Update(Game game);
 }
