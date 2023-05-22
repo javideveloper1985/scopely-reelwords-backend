@@ -16,6 +16,9 @@ public class GameDto
     [JsonProperty("score")]
     public int Score { get; set; }
 
+    [JsonProperty("playedWords")]
+    public List<WordDto> PlayedWords { get; set; }
+
     [JsonProperty("createdOn")]
     public DateTime CreatedOn { get; set; }
 }

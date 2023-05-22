@@ -1,16 +1,11 @@
-﻿using Microsoft.Extensions.Options;
-using Moq;
+﻿using Moq;
 using ReelWords.Constants;
 using ReelWords.Domain.Entities;
-using ReelWords.Domain.Services;
-using ReelWords.Domain.ValueObjects;
 using ReelWords.Infrastructure.Tests.TestFixture;
 using ReelWords.Main;
 using ReelWords.Services;
 using ReelWords.UseCases;
-using Scopely.Core.Result;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 

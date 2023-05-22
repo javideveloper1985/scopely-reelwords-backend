@@ -2,7 +2,7 @@
 using ReelWords.Domain.Services;
 using ReelWords.Domain.ValueObjects;
 
-namespace ReelWords.Infrastructure.Services;
+namespace ReelWords.Infrastructure.Services.Implementations;
 
 public class CreateReelPanelFileService : ICreateReelPanelService
 {
@@ -21,7 +21,7 @@ public class CreateReelPanelFileService : ICreateReelPanelService
         var lines = File.ReadAllLines(_path);
 
         var panel = ReelPanel.CreateEmpty(lines.Length, wordSize);
-        for(int idxRow = 0; idxRow < lines.Length; idxRow++)
+        for (int idxRow = 0; idxRow < lines.Length; idxRow++)
         {
             var letters = lines[idxRow].Replace(" ", "").ToArray();
             panel.AddReel(idxRow, letters);

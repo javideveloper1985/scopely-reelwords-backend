@@ -29,6 +29,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="TestData\SavedGames\marthaGame.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="TestData\words.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

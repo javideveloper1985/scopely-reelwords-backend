@@ -13,7 +13,9 @@ public class Game
 
     public DateTime CreatedOn { get; private set; }
 
-    public int Score { get; private set; } = 0;
+    public List<Word> PlayedWords { get; private set; }
+
+    public int Score { get; private set; }
 
     private Game() { }
 
@@ -31,7 +33,9 @@ public class Game
             Id = Guid.NewGuid().ToString(),
             UserId = userId,
             ReelPanel = reelPanel,
-            CreatedOn = DateTime.Now
+            CreatedOn = DateTime.Now,
+            PlayedWords = new List<Word>(),
+            Score = 0
         };
     }
 
@@ -40,6 +44,7 @@ public class Game
         string userId,
         DateTime createdOn,
         ReelPanel reelPanel,
+        List<Word> playedWords,
         int score)
             => new()
             {
@@ -47,13 +52,24 @@ public class Game
                 UserId = userId,
                 CreatedOn = createdOn,
                 Score = score,
-                ReelPanel = reelPanel
+                ReelPanel = reelPanel,
+                PlayedWords = playedWords
             };
 
-    public void AddScore(int score)
+    public void AddScore(int score, string word)
     {
-        Score += score;
-        if (Score < 0)
-            Score = 0;
+        PlayedWords.Add(Word.Create(word, score));
+        if (score > 0)
+            Score += score;
     }
+
+    public void SubtractScore(int score)
+    {
+        if (Score - score <= 0)
+            Score = 0;
+        else
+            Score -= score;
+    }
+
+    public void Shuffle() => ReelPanel.Shuffle();
 }

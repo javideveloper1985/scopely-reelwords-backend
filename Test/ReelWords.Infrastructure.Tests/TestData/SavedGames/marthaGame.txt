@@ -1,0 +1,28 @@
+{
+	"id": "e5eee5aa-f464-4c04-9bc7-4b53bca4f7d7",
+	"user": "marthaGame",
+	"reelPanel": [
+		[
+			"e",
+			"j",
+			"l",
+		],
+		[
+			"v",
+			"n",
+			"y",
+		]
+	],
+	"score": 24,
+	"playedWords": [
+		{
+			"value": "x",
+			"score": 4
+		},
+		{
+			"value": "y",
+			"score": 4
+		}
+	],
+	"createdOn": "2023-05-22T11:03:45.1701739+02:00"
+}

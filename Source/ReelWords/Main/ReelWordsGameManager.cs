@@ -3,7 +3,6 @@ using ReelWords.Constants;
 using ReelWords.Domain.Entities;
 using ReelWords.Domain.Factories;
 using ReelWords.Domain.Services;
-using ReelWords.Domain.ValueObjects;
 using ReelWords.Services;
 using ReelWords.UseCases;
 using Scopely.Core.Enums;
@@ -150,7 +149,7 @@ public class ReelWordsGameManager : IReelWordsGameManager
         if (word.Equals(UserKeyWords.Shuffle, StringComparison.InvariantCultureIgnoreCase))
         {
             _game.ReelPanel.Shuffle();
-            _game.AddScore(_shufflePenaltyPoints * -1);
+            _game.SubtractScore(_shufflePenaltyPoints);
             _uiService.ShowError($"You have lost {_shufflePenaltyPoints} points. Total points: {_game.Score}");
             return true;
         }
@@ -253,7 +252,7 @@ public class ReelWordsGameManager : IReelWordsGameManager
 
         if (points != -1)
         {
-            _game.AddScore(points);
+            _game.AddScore(points, word);
             _game.ReelPanel.ScrollLetters(word);
 
             _uiService.ShowSuccess($"Great!! You have obtained {points} points!! Total points: {_game.Score}.");

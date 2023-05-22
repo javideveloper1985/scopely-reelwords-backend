@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using ReelWords.Domain.Repositories;
 using ReelWords.Domain.Services;
 using ReelWords.Infrastructure.Repositories;
-using ReelWords.Infrastructure.Services;
 using ReelWords.Main;
 using ReelWords.Services.Implementations;
 using ReelWords.Services;
@@ -12,6 +11,7 @@ using ReelWords.UseCases;
 using System;
 using Microsoft.Extensions.Configuration;
 using ReelWords.Domain.Services.Implementations;
+using ReelWords.Infrastructure.Services.Implementations;
 
 namespace ReelWords
 {
@@ -36,7 +36,8 @@ namespace ReelWords
                 .AddSingleton<IGetLetterScoresService, GetLetterScoresFileService>()
                 .AddSingleton<IGetDictionaryService, GetDictionaryFileService>()
                 .AddSingleton<ISaveGameService, SaveGameService>()
-                
+                .AddSingleton<IFileService, FileService>()
+
                 .AddSingleton<ILoadGameUseCase, LoadGameUseCase>()
                 .AddSingleton<ICreateGameUseCase, CreateGameUseCase>()
                 .AddSingleton<ISaveGameUseCase, SaveGameUseCase>()

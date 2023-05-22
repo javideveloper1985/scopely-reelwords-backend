@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using ReelWords.Domain.Services;
 
-namespace ReelWords.Infrastructure.Services;
+namespace ReelWords.Infrastructure.Services.Implementations;
 
 public class GetDictionaryFileService : IGetDictionaryService
 {

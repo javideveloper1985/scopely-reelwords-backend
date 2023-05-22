@@ -1,8 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using ReelWords.Domain.Services;
-using ReelWords.Domain.ValueObjects;
 
-namespace ReelWords.Infrastructure.Services;
+namespace ReelWords.Infrastructure.Services.Implementations;
 
 public class GetLetterScoresFileService : IGetLetterScoresService
 {

@@ -1,6 +1,4 @@
-﻿using ReelWords.Domain.ValueObjects;
-
-namespace ReelWords.Domain.Services;
+﻿namespace ReelWords.Domain.Services;
 
 public interface IGetLetterScoresService
 {

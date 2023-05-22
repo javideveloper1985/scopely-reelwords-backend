@@ -1,4 +1,5 @@
 using ReelWords.Infrastructure.Services;
+using ReelWords.Infrastructure.Services.Implementations;
 using ReelWords.Infrastructure.Tests.TestFixture;
 
 namespace ReelWords.Infrastructure.Tests.Services

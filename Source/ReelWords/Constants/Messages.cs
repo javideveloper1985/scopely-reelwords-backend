@@ -16,5 +16,5 @@ public static class Messages
         "regarding to the corresponding letter points.";
     public const string Welcome = "WELCOME TO REELWORDS";
 
-    //TODO: To be continued in a dictionary by language and message keys
+    //TODO: To be continued in a dictionary by languaje and message keys
 }
