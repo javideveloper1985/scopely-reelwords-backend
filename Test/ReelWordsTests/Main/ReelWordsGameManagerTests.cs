@@ -9,6 +9,7 @@ using ReelWords.Main;
 using ReelWords.Services;
 using ReelWords.UseCases;
 using Scopely.Core.Result;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
@@ -28,32 +29,13 @@ namespace ReelWordsTests.Main
         public async Task Start_WhenCompleteGameWithRounds_ShouldChangeScore()
         {
             var expectedPoints = 6;
-            var userId = "peter";
-            var wordSize = int.Parse(_fixture.Configuration[ConfigKeys.WordSize]);
-            var penalty = int.Parse(_fixture.Configuration[ConfigKeys.ShufflePenalty]);
-            var wordList = new List<string>() { "cat", "hat", "can" };
-            var scores = new Dictionary<char, int>() { ['c'] = 3, ['a'] = 1, ['t'] = 2 };
-            var reelPanel = ReelPanel.CreateEmpty(2, 3);
-            reelPanel.AddReel(0, new char[] { 'x', 'y', 'z' });
-            reelPanel.AddReel(1, new char[] { 't', 'c', 'a' });
-            var game = Game.CreateNew(userId, reelPanel);
-
-            var getLetterScoresMock = new Mock<IGetLetterScoresService>();
-            getLetterScoresMock
-                .Setup(serv => serv.Get())
-                .ReturnsAsync(scores);
-
-            var getDictionaryMock = new Mock<IGetDictionaryService>();
-            getDictionaryMock
-                .Setup(serv => serv.GetByWordSize(
-                    It.Is<int>(x => x == wordSize)))
-                .ReturnsAsync(wordList);
+            var expecteUserId = "martha";
 
             var uiMock = new Mock<IConsoleUserInterfaceService>();
             uiMock
                 .Setup(serv => serv.GetInput(
                     It.Is<string>(x => x == Messages.EnterUser)))
-                .Returns(userId);
+                .Returns(expecteUserId);
             uiMock
                 .SetupSequence(serv => serv.GetInput(
                     It.Is<string>(x => x == Messages.EnterWord)))
@@ -68,30 +50,14 @@ namespace ReelWordsTests.Main
                     It.IsAny<string[]>()))
                 .Returns("y");
 
-            var loadGameMock = new Mock<ILoadGameUseCase>();
-            loadGameMock
-                .Setup(uc => uc.Execute(
-                    It.Is<string>(x => x == userId)))
-                .ReturnsAsync(Result<Game>.Ok(null));
-
-            var createGameMock = new Mock<ICreateGameUseCase>();
-            createGameMock
-                .Setup(uc => uc.Execute(
-                    It.Is<int>(x => x == wordSize),
-                    It.Is<string>(x => x == userId)))
-                .ReturnsAsync(Result<Game>.Ok(game));
-
-            var saveGameMock = new Mock<ISaveGameUseCase>();
-            saveGameMock
-                .Setup(uc => uc.Execute(game))
-                .ReturnsAsync(Result<string>.Ok(game.Id));
-
+            var game = _fixture.CreateDefaultGame(expecteUserId);
+            var saveMock = _fixture.CreateSaveOkMock(game);
             var reelWordsGameManager = new ReelWordsGameManager(
-                loadGameMock.Object,
-                createGameMock.Object,
-                saveGameMock.Object,
-                getLetterScoresMock.Object,
-                getDictionaryMock.Object,
+                _fixture.CreateLoadNullGameMock(expecteUserId).Object,
+                _fixture.CreateGameUseCaseMock(game, null, expecteUserId).Object,
+                saveMock.Object,
+                _fixture.CreateScoresMock().Object,
+                _fixture.CreateDictionaryMock().Object,
                 uiMock.Object,
                 _fixture.Configuration);
 
@@ -118,11 +84,66 @@ namespace ReelWordsTests.Main
                     It.IsAny<string[]>()),
                     Times.Once);
 
-            saveGameMock
-                .Verify(uc => uc.Execute(It.Is<Game>(x => x == game)),
+            saveMock
+                .Verify(uc => uc.Execute(It.Is<Game>(x => x == game && x.UserId == expecteUserId)),
                 Times.Once);
 
             Assert.Equal(expectedPoints, game.Score);
+        }
+
+        [Fact]
+        public async Task Start_WhenUserDecidesExitsAtTheBegining_ShouldExitApplicationWithoutAskToSave()
+        {
+            var uiMock = new Mock<IConsoleUserInterfaceService>();
+            uiMock
+                .Setup(serv => serv.GetInput(
+                    It.Is<string>(x => x == Messages.EnterUser)))
+                .Returns(UserKeyWords.Exit);
+
+            var loadGameMock = new Mock<ILoadGameUseCase>(); 
+            var createGameMock = new Mock<ICreateGameUseCase>(); 
+            var saveGameMock = new Mock<ISaveGameUseCase>();
+            var scoresMock = _fixture.CreateScoresMock();
+            var dictionaryMock = _fixture.CreateDictionaryMock();
+
+            var reelWordsGameManager = new ReelWordsGameManager(
+                loadGameMock.Object,
+                createGameMock.Object,
+                saveGameMock.Object,
+                scoresMock.Object,
+                dictionaryMock.Object,
+                uiMock.Object,
+                _fixture.Configuration);
+
+            await reelWordsGameManager.Start();
+
+            scoresMock
+                .Verify(serv => serv.Get(),
+                Times.Once);
+            dictionaryMock
+                .Verify(serv => serv.GetByWordSize(
+                    It.Is<int>(x => x == ReelWordsFixture.DefaultWordSize)),
+                Times.Once);
+
+            loadGameMock.VerifyNoOtherCalls();
+            createGameMock.VerifyNoOtherCalls();
+            saveGameMock.VerifyNoOtherCalls();
+
+            uiMock
+                .Verify(uc => uc.ShowMessage(
+                    It.Is<string>(x => x.Contains(Messages.Thanks)),
+                    It.IsAny<ConsoleColor>()),
+                    Times.Once);
+
+            uiMock
+                .Verify(uc => uc.AskForInputOption(
+                    It.Is<string>(x => x == Messages.AskSave),
+                    It.IsAny<string[]>()),
+                    Times.Never);
+
+            saveGameMock
+                .Verify(uc => uc.Execute(It.IsAny<Game>()),
+                Times.Never);
         }
     }
 }

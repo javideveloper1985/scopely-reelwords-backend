@@ -295,26 +295,34 @@ public class ReelWordsGameManager : IReelWordsGameManager
 
     private void Welcome()
     {
-        _uiService.ShowMessage("**********************************************", ConsoleColor.Cyan);
-        _uiService.ShowMessage("************ WELCOME TO REELWORDS ************", ConsoleColor.Cyan);
-        _uiService.ShowMessage("**********************************************", ConsoleColor.Cyan);
-        _uiService.NewLine();
-        _uiService.ShowSuccess("Game instructions:");
-        _uiService.ShowMessage(" - You must create words with the letters that appear on the screen. " +
-            "The word must exist in the game dictionary. If it exists, you will receive certain points " +
-            "regarding to the corresponding letter points.");
-        _uiService.NewLine();
-        _uiService.ShowSuccess("Special commands:");
-        _uiService.ShowMessage($" - '{UserKeyWords.Exit}' -> End game.");
-        _uiService.ShowMessage($" - '{UserKeyWords.Shuffle}' -> If you are not be able to find words, you can shuffle the letters with a {_shufflePenaltyPoints} points penalty.");
-        _uiService.NewLine();
+        var sb = new StringBuilder();
+        sb.AppendLine("**********************************************");
+        sb.AppendLine($"************ {Messages.Welcome} ************");
+        sb.AppendLine("**********************************************");
+        sb.AppendLine();
+        _uiService.ShowMessage(sb.ToString(), ConsoleColor.Cyan);
+
+        sb.Clear();
+        sb.AppendLine("Game instructions:");
+        sb.AppendLine(Messages.GameInstructions);
+        sb.AppendLine();
+        _uiService.ShowMessage(sb.ToString());
+
+        sb.Clear();
+        sb.AppendLine("Special commands:");
+        sb.AppendLine($" - '{UserKeyWords.Exit}' -> End game.");
+        sb.AppendLine($" - '{UserKeyWords.Shuffle}' -> If you are not be able to find words, you can shuffle the letters with a {_shufflePenaltyPoints} points penalty.");
+        sb.AppendLine();
+        _uiService.ShowMessage(sb.ToString());
     }
 
     private void GoodBye()
     {
         _uiService.NewLine();
-        _uiService.ShowMessage("********************************************", ConsoleColor.Cyan);
-        _uiService.ShowMessage("************ THANKS FOR PLAYING ************", ConsoleColor.Cyan);
-        _uiService.ShowMessage("********************************************", ConsoleColor.Cyan);
+        var sb = new StringBuilder();
+        sb.AppendLine("********************************************");
+        sb.AppendLine($"************ {Messages.Thanks} ************");
+        sb.AppendLine("********************************************");
+        _uiService.ShowMessage(sb.ToString(), ConsoleColor.Cyan);
     }
 }
