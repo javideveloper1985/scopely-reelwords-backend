@@ -31,6 +31,8 @@ public class GameLocalFileRepository : IGameRepository
         var filePath = Path.Combine(_rootFolder, _savedGamesFolder, $"{userId}.txt");
 
         var text = _fileService.ReadFile(filePath);
+        if (string.IsNullOrEmpty(text))
+            return null;
 
         var dto = JsonConvert.DeserializeObject<GameDto>(text);
 

@@ -31,6 +31,7 @@ namespace ReelWords
                 .AddScoped<IGameRepository, GameLocalFileRepository>()
                 .AddScoped<IGetDictionaryService, GetDictionaryFileService>()
 
+                .AddSingleton<IReelWordsUserInterfaceService, ReelWordsUserInterfaceService>()
                 .AddSingleton<IConsoleUserInterfaceService, ConsoleUserInterfaceService>()
                 .AddSingleton<ICreateReelPanelService, CreateReelPanelFileService>()
                 .AddSingleton<IGetLetterScoresService, GetLetterScoresFileService>()
@@ -41,7 +42,7 @@ namespace ReelWords
                 .AddSingleton<ILoadGameUseCase, LoadGameUseCase>()
                 .AddSingleton<ICreateGameUseCase, CreateGameUseCase>()
                 .AddSingleton<ISaveGameUseCase, SaveGameUseCase>()
-                
+
                 .AddSingleton<IReelWordsGameManager, ReelWordsGameManager>()
 
                 .BuildServiceProvider();

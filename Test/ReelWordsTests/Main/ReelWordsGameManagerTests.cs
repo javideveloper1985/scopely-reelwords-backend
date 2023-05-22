@@ -17,7 +17,7 @@ namespace ReelWordsTests.Main
 
         public ReelWordsGameManagerTests(ReelWordsFixture fixture)
         {
-            _fixture = fixture ?? throw new System.ArgumentNullException(nameof(fixture));
+            _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }
 
         [Fact]
@@ -26,24 +26,20 @@ namespace ReelWordsTests.Main
             var expectedPoints = 6;
             var expecteUserId = "martha";
 
-            var uiMock = new Mock<IConsoleUserInterfaceService>();
-            uiMock
-                .Setup(serv => serv.GetInput(
-                    It.Is<string>(x => x == Messages.EnterUser)))
+            var gameUiMock = new Mock<IReelWordsUserInterfaceService>();
+            gameUiMock
+                .Setup(serv => serv.InputUserName())
                 .Returns(expecteUserId);
-            uiMock
-                .SetupSequence(serv => serv.GetInput(
-                    It.Is<string>(x => x == Messages.EnterWord)))
+            gameUiMock
+                .SetupSequence(serv => serv.InputWord())
                 .Returns("123") //Invalid chars
                 .Returns("ppp") //Invalid word
                 .Returns("ca") //Invalid word
                 .Returns("cat") //Valid word
                 .Returns(UserKeyWords.Exit); //Exit
-            uiMock
-                .Setup(serv => serv.AskForInputOption(
-                    It.Is<string>(x => x == Messages.AskSave),
-                    It.IsAny<string[]>()))
-                .Returns("y");
+            gameUiMock
+                .Setup(serv => serv.CheckIfUserWantsSaveGame())
+                .Returns(true);
 
             var game = _fixture.CreateDefaultGame(expecteUserId);
             var saveMock = _fixture.CreateSaveOkMock(game);
@@ -53,30 +49,28 @@ namespace ReelWordsTests.Main
                 saveMock.Object,
                 _fixture.CreateScoresMock().Object,
                 _fixture.CreateDictionaryMock().Object,
-                uiMock.Object,
+                gameUiMock.Object,
                 _fixture.Configuration);
 
             await reelWordsGameManager.Start();
 
-            uiMock
-                .Verify(serv => serv.ShowError(
+            gameUiMock
+                .Verify(serv => serv.ShowWrongInput(
                     It.Is<string>(x => x == Messages.WrongWordReel)),
                     Times.Once);
 
-            uiMock
-                .Verify(uc => uc.ShowError(
+            gameUiMock
+                .Verify(uc => uc.ShowWrongInput(
                     It.Is<string>(x => x == Messages.WrongWordLanguage)),
                     Times.Once);
 
-            uiMock
-                .Verify(uc => uc.ShowError(
+            gameUiMock
+                .Verify(uc => uc.ShowWrongInput(
                     It.Is<string>(x => x == Messages.WrongWordDictionary)),
                     Times.Once);
 
-            uiMock
-                .Verify(uc => uc.AskForInputOption(
-                    It.Is<string>(x => x == Messages.AskSave),
-                    It.IsAny<string[]>()),
+            gameUiMock
+                .Verify(uc => uc.CheckIfUserWantsSaveGame(),
                     Times.Once);
 
             saveMock
@@ -89,14 +83,15 @@ namespace ReelWordsTests.Main
         [Fact]
         public async Task Start_WhenUserDecidesExitsAtTheBegining_ShouldExitApplicationWithoutAskToSave()
         {
+            var gameUiMock = new Mock<IReelWordsUserInterfaceService>();
             var uiMock = new Mock<IConsoleUserInterfaceService>();
             uiMock
                 .Setup(serv => serv.GetInput(
-                    It.Is<string>(x => x == Messages.EnterUser)))
+                    It.Is<string>(x => x == Messages.EnterUserName)))
                 .Returns(UserKeyWords.Exit);
 
-            var loadGameMock = new Mock<ILoadGameUseCase>(); 
-            var createGameMock = new Mock<ICreateGameUseCase>(); 
+            var loadGameMock = new Mock<ILoadGameUseCase>();
+            var createGameMock = new Mock<ICreateGameUseCase>();
             var saveGameMock = new Mock<ISaveGameUseCase>();
             var scoresMock = _fixture.CreateScoresMock();
             var dictionaryMock = _fixture.CreateDictionaryMock();
@@ -107,7 +102,7 @@ namespace ReelWordsTests.Main
                 saveGameMock.Object,
                 scoresMock.Object,
                 dictionaryMock.Object,
-                uiMock.Object,
+                gameUiMock.Object,
                 _fixture.Configuration);
 
             await reelWordsGameManager.Start();

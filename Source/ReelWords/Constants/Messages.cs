@@ -2,7 +2,7 @@
 
 public static class Messages
 {
-    public const string EnterUser = "Please, enter an user id...";
+    public const string EnterUserName = "Please, enter an user id...";
     public const string UnexpectedError = "We're sorry. An unexpected error has occurred. Restart the application and try again.";
     public const string EnterWord = "Enter a word using the max number of letters below...";
     public const string AskSave = "Would you like to save the game?";
@@ -11,7 +11,7 @@ public static class Messages
     public const string WrongWordDictionary = "The word does not exist in the game dictionary.";
     public const string Thanks = "THANKS FOR PLAYING";
     public const string GameInstructions =
-        " - You must create words with the letters that appear on the screen. " +
+        "You must create words with the letters that appear on the screen. " +
         "The word must exist in the game dictionary. If it exists, you will receive certain points " +
         "regarding to the corresponding letter points.";
     public const string Welcome = "WELCOME TO REELWORDS";
