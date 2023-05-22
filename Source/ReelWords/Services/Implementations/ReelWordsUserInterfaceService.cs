@@ -17,7 +17,7 @@ public class ReelWordsUserInterfaceService : IReelWordsUserInterfaceService
         _consoleUiService = uiService ?? throw new ArgumentNullException(nameof(uiService));
     }
 
-    public void ShowReel(ReelPanel reelPanel, Dictionary<char, int> scores)
+    public void ShowReelLetters(ReelPanel reelPanel, Dictionary<char, int> scores)
     {
         _consoleUiService.NewLine();
         var currentReel = reelPanel.GetCurrentReel();
@@ -42,7 +42,7 @@ public class ReelWordsUserInterfaceService : IReelWordsUserInterfaceService
         _consoleUiService.ShowMessage(sb.ToString(), ConsoleColor.Cyan);
     }
 
-    public void ShowLevelScore(int level, int score)
+    public void ShowLevelAndScore(int level, int score)
     {
         _consoleUiService.NewLine();
         _consoleUiService.ShowMessage($"********************", ConsoleColor.Blue);

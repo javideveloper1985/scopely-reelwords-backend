@@ -8,6 +8,7 @@ public static class Messages
     public const string AskSave = "Would you like to save the game?";
     public const string WrongWordReel = "You must use the letters of the reel.";
     public const string WrongWordLanguage = "You must use letters of English language.";
+    public const string EmptyWordLanguage = "You cannot play an empty word.";
     public const string WrongWordDictionary = "The word does not exist in the game dictionary.";
     public const string Thanks = "THANKS FOR PLAYING";
     public const string GameInstructions =

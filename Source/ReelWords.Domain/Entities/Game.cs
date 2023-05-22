@@ -65,10 +65,11 @@ public class Game
 
     public void SubtractScore(int score)
     {
-        if (Score - score <= 0)
+        var res = Score - score;
+        if (res <= 0)
             Score = 0;
         else
-            Score -= score;
+            Score = res;
     }
 
     public void Shuffle() => ReelPanel.Shuffle();

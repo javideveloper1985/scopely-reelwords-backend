@@ -10,8 +10,8 @@ public interface IReelWordsOutputService
     Task ShowUnexpectedError(string message);
     void ShowWelcome(int penalty);
     void ShowGoodbye();
-    void ShowLevelScore(int level, int score);
-    void ShowReel(ReelPanel reelPanel, Dictionary<char, int> scores);
+    void ShowLevelAndScore(int level, int score);
+    void ShowReelLetters(ReelPanel reelPanel, Dictionary<char, int> scores);
     void ShowSaveGameResponse(bool isOk);
     void ShowWords(List<Word> words);
     void ShowPenalty(int points, int totalScore);

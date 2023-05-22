@@ -42,7 +42,8 @@ namespace ReelWords
                 .AddSingleton<ILoadGameUseCase, LoadGameUseCase>()
                 .AddSingleton<ICreateGameUseCase, CreateGameUseCase>()
                 .AddSingleton<ISaveGameUseCase, SaveGameUseCase>()
-
+                .AddSingleton<IPlayRoundUseCase, PlayRoundUseCase>()
+                
                 .AddSingleton<IReelWordsGameManager, ReelWordsGameManager>()
 
                 .BuildServiceProvider();

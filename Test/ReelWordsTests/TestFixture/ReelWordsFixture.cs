@@ -6,6 +6,7 @@ using ReelWords.Domain.Services;
 using ReelWords.Domain.ValueObjects;
 using ReelWords.UseCases;
 using Scopely.Core.Result;
+using Scopely.Core.Structures;
 using System.Collections.Generic;
 
 namespace ReelWords.Infrastructure.Tests.TestFixture
@@ -21,10 +22,13 @@ namespace ReelWords.Infrastructure.Tests.TestFixture
 
         public static List<string> DefaultWordList = new()
         {
-            "cat",
+            "pet",
             "hat",
-            "can"
+            "can",
+            "cat"
         };
+
+        public readonly Trie Trie;
 
         public static char[] Reel1 = new char[] { 'x', 'y', 'z' };
         public static char[] Reel2 = new char[] { 't', 'c', 'a' };
@@ -42,6 +46,8 @@ namespace ReelWords.Infrastructure.Tests.TestFixture
             configMock.Setup(x => x[ConfigKeys.WordSize]).Returns(DefaultWordSize.ToString());
             configMock.Setup(x => x[ConfigKeys.ShufflePenalty]).Returns(DefaultPenaltyScore.ToString());
             Configuration = configMock.Object;
+
+            Trie = Trie.CreateFromListOfWords(DefaultWordList);
         }
 
         public Mock<IGetDictionaryService> CreateDictionaryMock(int? wordSize = null, List<string> words = null)
