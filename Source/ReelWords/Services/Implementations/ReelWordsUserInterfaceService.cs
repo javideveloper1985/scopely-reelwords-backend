@@ -53,19 +53,21 @@ public class ReelWordsUserInterfaceService : IReelWordsUserInterfaceService
 
     public void ShowWelcome(int penalty)
     {
-        _consoleUiService.NewLine();
-
         var sb = new StringBuilder();
         sb.AppendLine("**********************************************");
         sb.AppendLine($"************ {Messages.Welcome} ************");
         sb.AppendLine("**********************************************");
-        sb.AppendLine();
         _consoleUiService.ShowMessage(sb.ToString(), ConsoleColor.Cyan);
 
         _consoleUiService.ShowTitle("Game instructions:");
         sb.Clear();
         sb.AppendLine($" - {Messages.GameInstructions}");
-        sb.AppendLine();
+        _consoleUiService.ShowMessage(sb.ToString());
+
+        _consoleUiService.ShowTitle("Saved games:");
+        sb.Clear();
+        sb.AppendLine($" - When you have started a game, you can save your current score.");
+        sb.AppendLine($" - If you have already saved a game, you could load it if you use the same user name.");
         _consoleUiService.ShowMessage(sb.ToString());
 
         _consoleUiService.ShowTitle("Special commands:");
@@ -73,7 +75,6 @@ public class ReelWordsUserInterfaceService : IReelWordsUserInterfaceService
         sb.AppendLine($" - '{UserKeyWords.Exit}' -> End game.");
         sb.AppendLine($" - '{UserKeyWords.Shuffle}' -> If you cannot find words, you can shuffle the letters with a {penalty} points penalty. (Only during the game)");
         sb.AppendLine($" - '{UserKeyWords.ShowWords}' -> Show submitted words in the game. (Only during the game)");
-        sb.AppendLine();
         _consoleUiService.ShowMessage(sb.ToString());
     }
 

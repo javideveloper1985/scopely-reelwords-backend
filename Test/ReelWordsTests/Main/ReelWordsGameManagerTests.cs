@@ -1,12 +1,13 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Logging;
+using Moq;
 using ReelWords.Commands;
 using ReelWords.Constants;
 using ReelWords.Domain.Entities;
-using ReelWords.Infrastructure.Tests.TestFixture;
 using ReelWords.Main;
 using ReelWords.Services;
 using ReelWords.UseCases;
-using ReelWords.UseCases.Implementations;
+using ReelWords.UseCases.Requests;
+using ReelWordsTests.TestFixture;
 using System;
 using System.Threading.Tasks;
 using Xunit;
@@ -38,13 +39,13 @@ namespace ReelWordsTests.Main
                 .ReturnsAsync(new InvalidWordCommand(Messages.WrongWordDictionary))
                 .ReturnsAsync(new WordSubmittedCommand("cat", expectedPoints))
                 .ReturnsAsync(new ExitGameCommand(true)); //Exit with save
-
             var gameUiMock = new Mock<IReelWordsUserInterfaceService>();
             gameUiMock
                 .Setup(serv => serv.InputUserName())
                 .Returns(expecteUserId);
-
+            var logMock = new Mock<ILogger<ReelWordsGameManager>>();
             var saveMock = _fixture.CreateSaveOkMock(game);
+            
             var reelWordsGameManager = new ReelWordsGameManager(
                 _fixture.CreateLoadNullGameMock(expecteUserId).Object,
                 _fixture.CreateGameUseCaseMock(game, null, expecteUserId).Object,
@@ -53,7 +54,8 @@ namespace ReelWordsTests.Main
                 _fixture.CreateScoresMock().Object,
                 _fixture.CreateDictionaryMock().Object,
                 gameUiMock.Object,
-                _fixture.Configuration);
+                _fixture.Configuration,
+                logMock.Object);
 
             await reelWordsGameManager.Start();
 
@@ -91,6 +93,7 @@ namespace ReelWordsTests.Main
             var playRoundMock = new Mock<IPlayRoundUseCase>();
             var scoresMock = _fixture.CreateScoresMock();
             var dictionaryMock = _fixture.CreateDictionaryMock();
+            var logMock = new Mock<ILogger<ReelWordsGameManager>>();
 
             var reelWordsGameManager = new ReelWordsGameManager(
                 loadGameMock.Object,
@@ -100,7 +103,8 @@ namespace ReelWordsTests.Main
                 scoresMock.Object,
                 dictionaryMock.Object,
                 gameUiMock.Object,
-                _fixture.Configuration);
+                _fixture.Configuration,
+                logMock.Object);
 
             await reelWordsGameManager.Start();
 

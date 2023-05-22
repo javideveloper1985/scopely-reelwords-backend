@@ -1,6 +1,6 @@
 using Scopely.Core.Extensions;
 
-namespace Scopely.Core.Tests.ValueObjects;
+namespace Scopely.Core.Tests.Extensions;
 
 public class CharExtensionsTests
 {

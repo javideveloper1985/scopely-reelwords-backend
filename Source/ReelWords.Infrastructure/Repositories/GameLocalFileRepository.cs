@@ -2,9 +2,9 @@
 using Newtonsoft.Json;
 using ReelWords.Domain.Entities;
 using ReelWords.Domain.Repositories;
-using ReelWords.Domain.Services;
 using ReelWords.Infrastructure.Dto;
 using ReelWords.Infrastructure.Mappers;
+using ReelWords.Infrastructure.Services;
 
 namespace ReelWords.Infrastructure.Repositories;
 

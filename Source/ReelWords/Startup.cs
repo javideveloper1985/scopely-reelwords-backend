@@ -12,6 +12,7 @@ using System;
 using Microsoft.Extensions.Configuration;
 using ReelWords.Domain.Services.Implementations;
 using ReelWords.Infrastructure.Services.Implementations;
+using ReelWords.Infrastructure.Services;
 
 namespace ReelWords
 {

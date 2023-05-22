@@ -2,7 +2,7 @@
 
 public static class Messages
 {
-    public const string EnterUserName = "Please, enter an user id...";
+    public const string EnterUserName = "Please, enter an user name...";
     public const string UnexpectedError = "We're sorry. An unexpected error has occurred. Restart the application and try again.";
     public const string EnterWord = "Enter a word using the max number of letters below...";
     public const string AskSave = "Would you like to save the game?";

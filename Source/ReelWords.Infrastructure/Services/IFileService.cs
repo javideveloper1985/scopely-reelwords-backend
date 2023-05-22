@@ -1,4 +1,4 @@
-﻿namespace ReelWords.Domain.Services;
+﻿namespace ReelWords.Infrastructure.Services;
 
 public interface IFileService
 {

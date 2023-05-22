@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using ReelWords.Commands.Implementations;
-using ReelWords.UseCases.Implementations;
+using ReelWords.UseCases.Requests;
 
 namespace ReelWords.UseCases;
 

@@ -5,6 +5,7 @@ using ReelWords.Domain.Entities;
 using ReelWords.Domain.Factories;
 using ReelWords.Domain.Services;
 using ReelWords.Services;
+using ReelWords.UseCases.Requests;
 using Scopely.Core.Enums;
 using Scopely.Core.Structures;
 using System;

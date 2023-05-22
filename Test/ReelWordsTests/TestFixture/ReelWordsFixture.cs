@@ -9,7 +9,7 @@ using Scopely.Core.Result;
 using Scopely.Core.Structures;
 using System.Collections.Generic;
 
-namespace ReelWords.Infrastructure.Tests.TestFixture
+namespace ReelWordsTests.TestFixture
 {
     public class ReelWordsFixture
     {

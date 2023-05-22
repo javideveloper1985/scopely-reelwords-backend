@@ -1,18 +1,16 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using ReelWords.Commands;
 using ReelWords.Commands.Implementations;
 using ReelWords.Constants;
 using ReelWords.Domain.Entities;
-using ReelWords.Domain.Factories;
 using ReelWords.Domain.Services;
 using ReelWords.Services;
 using ReelWords.UseCases;
-using ReelWords.UseCases.Implementations;
-using Scopely.Core.Enums;
+using ReelWords.UseCases.Requests;
 using Scopely.Core.Structures;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace ReelWords.Main;
@@ -26,16 +24,18 @@ public class ReelWordsGameManager : IReelWordsGameManager
     private readonly IGetLetterScoresService _calculateScoreService;
     private readonly IGetDictionaryService _getValidWordsService;
     private readonly IReelWordsUserInterfaceService _gameUiService;
+    private readonly ILogger<ReelWordsGameManager> _logger;
 
     private Game _game;
     private Dictionary<char, int> _letterScores;
     private Trie _validTrie;
 
     private bool _stopGame = false;
+
     private readonly int _defaultWordSize;
     private readonly int _penaltyPoints;
 
-    //TODO: Inject ILogger to create system logs
+    //TODO: In order to create system logs, inject ILogger
     public ReelWordsGameManager(
         ILoadGameUseCase loadGame,
         ICreateGameUseCase createGame,
@@ -44,7 +44,8 @@ public class ReelWordsGameManager : IReelWordsGameManager
         IGetLetterScoresService scoreService,
         IGetDictionaryService getDictionaryService,
         IReelWordsUserInterfaceService gameUiService,
-        IConfiguration config)
+        IConfiguration config,
+        ILogger<ReelWordsGameManager> logger)
     {
         _loadGame = loadGame ?? throw new ArgumentNullException(nameof(loadGame));
         _createGame = createGame ?? throw new ArgumentNullException(nameof(createGame));
@@ -53,7 +54,7 @@ public class ReelWordsGameManager : IReelWordsGameManager
         _calculateScoreService = scoreService ?? throw new ArgumentNullException(nameof(scoreService));
         _getValidWordsService = getDictionaryService ?? throw new ArgumentNullException(nameof(getDictionaryService));
         _gameUiService = gameUiService ?? throw new ArgumentNullException(nameof(gameUiService));
-
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         if (config is null)
             throw new ArgumentNullException(nameof(config));
         _defaultWordSize = int.TryParse(config[ConfigKeys.WordSize], out int valueSize) ? valueSize : 7;
@@ -62,6 +63,7 @@ public class ReelWordsGameManager : IReelWordsGameManager
 
     private async Task LoadGameData()
     {
+        _logger.LogInformation("Loading data");
         _letterScores = await _calculateScoreService.Get();
         var validWords = await _getValidWordsService.GetByWordSize(_defaultWordSize);
         _validTrie = Trie.CreateFromListOfWords(validWords);
@@ -81,37 +83,32 @@ public class ReelWordsGameManager : IReelWordsGameManager
             if (!exit)
             {
                 _game = await GetSavedGame(userName);
-                if (_stopGame)
-                    return;
-
                 _game ??= await CreateNewGame(userName);
                 if (_stopGame)
                     return;
 
-                var stopGame = false;
                 var request = PlayRoundUseCaseRequest.Create(_game, _validTrie, _penaltyPoints);
 
-                do
+                while (!_stopGame)
                 {
                     _gameUiService.ShowLevelAndScore(request.Game.PlayedWords.Count, request.Game.Score);
                     _gameUiService.ShowReelLetters(request.Game.ReelPanel, _letterScores);
 
                     var command = await _playRoundUseCase.PlayRound(request);
 
-                    stopGame = await CommandHandler(command);
+                    _stopGame = await CommandHandler(command);
                 }
-                while (!stopGame);
             }
         }
         catch (Exception ex)
         {
+            _stopGame = true;
             await _gameUiService.ShowUnexpectedError($"{Messages.UnexpectedError}: {ex.Message}");
         }
 
         _gameUiService.ShowGoodbye();
     }
 
-    //TODO: Should be a class
     private async Task<bool> CommandHandler(IUserGameCommand command)
     {
         if (command is ExitGameCommand exitCommand)
@@ -143,18 +140,21 @@ public class ReelWordsGameManager : IReelWordsGameManager
         }
         else
             throw new InvalidOperationException("Unknonw command.");
-            
+
         return false;
     }
 
     private bool CheckExitKeyWord(string word)
         => word.Equals(UserKeyWords.Exit, StringComparison.InvariantCultureIgnoreCase);
 
-    private async Task<Game> GetSavedGame(string userName)
+    private async Task<Game?> GetSavedGame(string userName)
     {
         var gameResponse = await _loadGame.Execute(userName);
         if (!gameResponse.IsOk)
-            throw new InvalidOperationException("Error loading saved game.");
+        {
+            _logger.LogCritical("Error loading saved game.");
+            return null;
+        }
 
         return gameResponse.Value is not null && _gameUiService.CheckIfUserWantsLoadGame()
             ? gameResponse.Value
@@ -169,7 +169,7 @@ public class ReelWordsGameManager : IReelWordsGameManager
 
         return gameResponse.Value;
     }
-    
+
     private async Task Save()
     {
         var saveResponse = await _saveGame.Execute(_game);

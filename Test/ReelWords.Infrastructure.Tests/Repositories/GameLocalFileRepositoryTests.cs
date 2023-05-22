@@ -1,12 +1,12 @@
 using Moq;
 using Newtonsoft.Json;
-using ReelWords.Domain.Services;
 using ReelWords.Domain.ValueObjects;
 using ReelWords.Infrastructure.Mappers;
 using ReelWords.Infrastructure.Repositories;
+using ReelWords.Infrastructure.Services;
 using ReelWords.Infrastructure.Tests.TestFixture;
 
-namespace ReelWords.Infrastructure.Tests.Services
+namespace ReelWords.Infrastructure.Tests.Repositories
 {
     public class GameLocalFileRepositoryTests : IClassFixture<ReelWordsFixture>
     {

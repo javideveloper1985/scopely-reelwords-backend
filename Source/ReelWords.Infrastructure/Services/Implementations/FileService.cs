@@ -1,6 +1,4 @@
-﻿using ReelWords.Domain.Services;
-
-namespace ReelWords.Infrastructure.Services.Implementations;
+﻿namespace ReelWords.Infrastructure.Services.Implementations;
 
 public class FileService : IFileService
 {

@@ -2,7 +2,7 @@
 using Scopely.Core.Structures;
 using System;
 
-namespace ReelWords.UseCases.Implementations;
+namespace ReelWords.UseCases.Requests;
 
 public class PlayRoundUseCaseRequest
 {

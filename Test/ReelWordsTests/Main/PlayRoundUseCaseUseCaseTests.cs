@@ -1,13 +1,11 @@
 ﻿using Moq;
 using ReelWords.Commands;
 using ReelWords.Constants;
-using ReelWords.Domain.Entities;
 using ReelWords.Domain.Services;
-using ReelWords.Infrastructure.Tests.TestFixture;
-using ReelWords.Main;
 using ReelWords.Services;
-using ReelWords.UseCases;
 using ReelWords.UseCases.Implementations;
+using ReelWords.UseCases.Requests;
+using ReelWordsTests.TestFixture;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
