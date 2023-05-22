@@ -31,7 +31,7 @@ public class ReelWordsGameManager : IReelWordsGameManager
     private User _user;
     private Dictionary<char, int> _letterScores;
     private Trie _validTrie;
-    private bool _exit;
+    private bool _exitGame;
 
     private readonly int _defaultWordSize;
     private readonly int _penaltyPoints;
@@ -80,20 +80,21 @@ public class ReelWordsGameManager : IReelWordsGameManager
 
             await LoadGameData();
             await GetUserName();
-            if (_exit)
-                return;
 
-            _game = await GetSavedGame(_user.Id);
-            _game ??= await CreateNewGame(_user.Id);
+            if (!_exitGame)
+            {
+                _game = await GetSavedGame(_user.Id);
+                _game ??= await CreateNewGame(_user.Id);
+                await PlayRound();
+            }
 
-            await PlayRound();
+            _gameUiService.ShowGoodbye();
         }
         catch (Exception ex)
         {
             await _gameUiService.ShowUnexpectedError($"{Messages.UnexpectedError}: {ex.Message}");
+            _gameUiService.ShowGoodbye();
         }
-
-        _gameUiService.ShowGoodbye();
     }
 
     private async Task PlayRound()
@@ -124,16 +125,15 @@ public class ReelWordsGameManager : IReelWordsGameManager
 
     private async Task<bool> CommandHandler(IUserGameCommand command)
     {
-        var stopProcess = false;
+        var stopLoop = false;
 
         switch (command)
         {
             case ExitGameCommand exitCommand:
                 if (exitCommand.SaveGame)
                     await Save();
-                _gameUiService.ShowGoodbye();
-                stopProcess = true;
-                _exit = true;
+                stopLoop = true;
+                _exitGame = true;
                 break;
             case WrongNameCommand wrongNameCommand:
                 _gameUiService.ShowWrongInput(wrongNameCommand.Message);
@@ -161,10 +161,10 @@ public class ReelWordsGameManager : IReelWordsGameManager
                 _gameUiService.ShowWordSubmitted(wordSubmittedCommand.Value, wordSubmittedCommand.Score, _game.Score);
                 break;
             default:
-                throw new InvalidOperationException("Unknonw command.");
+                throw new InvalidOperationException("Unknown command.");
         }
 
-        return stopProcess;
+        return stopLoop;
     }
 
     private async Task<Game?> GetSavedGame(string userName)

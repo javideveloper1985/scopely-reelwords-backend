@@ -40,7 +40,7 @@ public class GetUserUseCase : IGetUserUseCase
     private IUserGameCommand CheckSpecialInput(string word)
     {
         if (word.Equals(UserKeyWords.Exit, StringComparison.InvariantCultureIgnoreCase))
-            return new ExitGameCommand(_gameUiService.CheckIfUserWantsSaveGame());
+            return new ExitGameCommand(false);
 
         if (word.Equals(UserKeyWords.Help, StringComparison.InvariantCultureIgnoreCase))
             return new HelpCommand();
