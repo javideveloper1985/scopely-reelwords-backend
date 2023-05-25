@@ -4,7 +4,6 @@ using ReelWords.Commands;
 using ReelWords.Constants;
 using ReelWords.Domain.Entities;
 using ReelWords.Domain.Services;
-using ReelWords.Domain.ValueObjects;
 using ReelWords.UseCases;
 using Scopely.Core.Result;
 using Scopely.Core.Structures;

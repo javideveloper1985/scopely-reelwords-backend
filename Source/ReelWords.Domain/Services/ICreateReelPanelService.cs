@@ -1,4 +1,4 @@
-﻿using ReelWords.Domain.ValueObjects;
+﻿using ReelWords.Domain.Entities;
 
 namespace ReelWords.Domain.Services;
 

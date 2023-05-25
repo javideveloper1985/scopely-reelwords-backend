@@ -1,4 +1,4 @@
-﻿using ReelWords.Domain.ValueObjects;
+﻿using ReelWords.Domain.Entities;
 using Xunit;
 
 namespace ReelWords.Domain.Tests.ValueObjects;

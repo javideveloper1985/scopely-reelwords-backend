@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Moq;
 using ReelWords.Domain.Entities;
-using ReelWords.Domain.ValueObjects;
 using ReelWords.Infrastructure.Repositories;
 using ReelWords.Infrastructure.Services.Implementations;
 

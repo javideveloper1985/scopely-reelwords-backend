@@ -1,4 +1,5 @@
 ﻿using ReelWords.Constants;
+using ReelWords.Domain.Entities;
 using ReelWords.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;

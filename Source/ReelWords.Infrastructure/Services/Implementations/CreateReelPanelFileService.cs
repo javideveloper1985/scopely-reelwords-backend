@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
+using ReelWords.Domain.Entities;
 using ReelWords.Domain.Services;
-using ReelWords.Domain.ValueObjects;
 
 namespace ReelWords.Infrastructure.Services.Implementations;
 

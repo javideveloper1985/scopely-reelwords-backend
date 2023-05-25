@@ -1,4 +1,5 @@
-﻿using ReelWords.Domain.ValueObjects;
+﻿using ReelWords.Domain.Entities;
+using ReelWords.Domain.ValueObjects;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

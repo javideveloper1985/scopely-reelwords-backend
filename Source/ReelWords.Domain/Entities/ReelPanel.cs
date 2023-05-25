@@ -2,21 +2,26 @@
 using Scopely.Core.Structures;
 using System.Text;
 
-namespace ReelWords.Domain.ValueObjects;
+namespace ReelWords.Domain.Entities;
 
 public class ReelPanel
 {
+    public Guid Id { get; }
+    
     public Matrix<char> Matrix { get; private set; }
 
     public int RowCount => Matrix.GetLength(0);
 
     public int ColumnCount => Matrix.GetLength(1);
 
-    private ReelPanel(int rows, int columns)
-        => Matrix = new Matrix<char>(rows, columns);
+    private ReelPanel(Guid id, int rows, int columns)
+    {
+        Matrix = new Matrix<char>(rows, columns);
+        Id = id;
+    }
 
     public static ReelPanel CreateEmpty(int rows, int columns)
-        => new(rows, columns);
+        => new(Guid.NewGuid(), rows, columns);
 
     public void AddReel(int row, char[] chars)
     {
